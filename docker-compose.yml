@@ -5,34 +5,35 @@ networks:
 
 services:
   nginx:
-    image: nginx:stable-alpine
+    image: nginx:latest
     container_name: nginx
+    restart: always
     ports:
-      - "2422:80"
-      - "2423:443"
+      - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./bolzhau.ai-main/dist:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - backend
-      - bolzhau.ai-main
+      - nextjs
+      - fastapi
     networks:
       - dev
 
-  backend:
-    build:
-      context: ./backend
-    container_name: backend
-    ports:
-      - "8000:8000"
-    networks:
-      - dev
-
-  bolzhau.ai-main:
-    build:
-      context: ./bolzhau.ai-main
-    container_name: bolzhau_ai
+  nextjs:
+    build: ./bolzhau.ai-main
+    container_name: nextjs
+    restart: always
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - dev
+
+  fastapi:
+    build: ./backend
+    container_name: fastapi
+    restart: always
+    ports:
+      - "8000:8000"
     networks:
       - dev
